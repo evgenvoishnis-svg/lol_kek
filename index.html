@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Женщины Вороновщины: память, которую нельзя стереть</title>
+<meta name="description" content="Цифровой мемориал о женщинах Вороновского района, прошедших через фашистские концлагеря и угон на принудительные работы в 1941–1944 гг.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --bg:#f5f0e8;
+  --text:#2c2c2c;
+  --accent:#800000;
+  --gold:#c9a227;
+  --line:#d4c9b8;
+  --soft:#faf7f0;
+  --header-h:64px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:"PT Sans","Open Sans",Arial,sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:Georgia,"PT Serif",serif;color:var(--text);margin:0 0 .5em}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus,button:focus,input:focus,textarea:focus,select:focus{outline:2px solid var(--gold);outline-offset:2px}
+img,svg{max-width:100%;height:auto;display:block}
+.container{max-width:1100px;margin:0 auto;padding:0 20px}
+.section{padding:72px 0;border-top:1px solid var(--line)}
+.section:first-of-type{border-top:none}
+.section-title{font-size:clamp(1.6rem,3vw,2.2rem);margin-bottom:8px;position:relative;padding-bottom:12px}
+.section-title::after{content:"";position:absolute;left:0;bottom:0;width:60px;height:2px;background:var(--gold)}
+.section-sub{color:#5a5a5a;font-size:1rem;margin-bottom:32px}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--accent);color:#fff;padding:8px 12px;z-index:1000}
+.skip-link:focus{left:0}
+
+/* Header */
+.site-header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:rgba(245,240,232,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:1000;display:flex;align-items:center}
+.header-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto;padding:0 20px}
+.logo{font-family:Georgia,"PT Serif",serif;font-size:1.15rem;font-weight:700;color:var(--accent);letter-spacing:.3px}
+.nav-list{list-style:none;margin:0;padding:0;display:flex;gap:22px}
+.nav-list a{color:var(--text);font-size:.95rem;padding:4px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.nav-list a:hover{color:var(--accent)}
+.nav-list a.active{color:var(--accent);border-bottom-color:var(--gold)}
+.hamburger{display:none;background:none;border:1px solid var(--line);padding:6px 10px;cursor:pointer;border-radius:6px;font-size:1.2rem}
+.mobile-menu{display:none}
+@media (max-width:768px){
+  .nav-list{display:none}
+  .hamburger{display:block}
+  .mobile-menu{display:block;position:fixed;top:var(--header-h);left:0;right:0;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 20px;transform:translateY(-120%);transition:transform .3s ease;z-index:999}
+  .mobile-menu.open{transform:translateY(0)}
+  .mobile-menu a{display:block;padding:10px 0;border-bottom:1px solid var(--line);color:var(--text)}
+  .mobile-menu a.active{color:var(--accent)}
+}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;background:#2c2c2c;color:#f5f0e8;position:relative;padding:calc(var(--header-h)+40px) 20px 60px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 4px);pointer-events:none}
+.hero-content{max-width:800px;position:relative;z-index:1}
+.hero h1{font-size:clamp(2.2rem,6vw,3.6rem);color:#f5f0e8;margin-bottom:16px;line-height:1.15}
+.hero .sub{font-size:clamp(1.05rem,2.2vw,1.4rem);color:#d4c9b8;margin-bottom:14px;font-style:italic}
+.hero .slogan{font-size:clamp(1rem,2vw,1.25rem);color:var(--gold);margin-bottom:32px;letter-spacing:.5px}
+.btn{display:inline-block;background:var(--accent);color:#fff;padding:12px 28px;border-radius:6px;font-size:1rem;border:1px solid var(--accent);cursor:pointer;transition:transform .2s,background .2s}
+.btn:hover{background:#600000;transform:translateY(-2px);text-decoration:none}
+.btn:focus{outline:2px solid var(--gold);outline-offset:3px}
+
+/* Key numbers */
+.numbers{background:var(--soft)}
+.num-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media (max-width:900px){.num-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:480px){.num-grid{grid-template-columns:1fr}}
+.num-card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:24px 18px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.06);transition:transform .2s,box-shadow .2s}
+.num-card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.08)}
+.num{font-family:Georgia,"PT Serif",serif;font-size:clamp(2rem,4vw,2.6rem);color:var(--accent);font-weight:700;line-height:1}
+.num-label{margin-top:8px;font-size:.95rem;color:var(--text)}
+.num-note{margin-top:6px;font-size:.78rem;color:#5a5a5a;font-style:italic}
+
+/* About */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+@media (max-width:768px){.about-grid{grid-template-columns:1fr}}
+.about-block{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:24px}
+.about-block h3{color:var(--accent);font-size:1.2rem;margin-bottom:10px}
+.about-block p{margin:0 0 10px}
+.thanks{margin-top:24px;padding:18px;border-left:3px solid var(--gold);background:var(--soft)}
+.institution{margin-top:24px;padding:18px;border:1px solid var(--line);border-radius:8px;background:#fff;font-style:italic}
+
+/* Timeline */
+.timeline{position:relative;padding-left:32px}
+.timeline::before{content:"";position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--line)}
+.tl-item{position:relative;margin-bottom:28px;padding-left:8px}
+.tl-item::before{content:"";position:absolute;left:-26px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 2px var(--accent)}
+.tl-date{font-family:Georgia,"PT Serif",serif;color:var(--accent);font-weight:700;font-size:1.05rem;margin-bottom:4px}
+.tl-text{margin:0}
+.tl-note{font-size:.8rem;color:#5a5a5a;font-style:italic;margin-top:4px}
+
+/* Stories accordion */
+.stories{display:flex;flex-direction:column;gap:16px}
+.story-card{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;transition:box-shadow .2s,transform .2s}
+.story-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);transform:translateY(-2px)}
+.story-head{width:100%;background:var(--soft);border:none;text-align:left;padding:18px 20px;cursor:pointer;display:flex;align-items:center;gap:16px}
+.story-head:focus{outline:2px solid var(--gold);outline-offset:-2px}
+.story-thumb{width:60px;height:80px;flex-shrink:0;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.story-title{flex:1}
+.story-name{font-family:Georgia,"PT Serif",serif;font-size:1.15rem;color:var(--accent);margin:0}
+.story-years{font-size:.9rem;color:#5a5a5a;margin:2px 0 0}
+.story-toggle{font-size:1.4rem;color:var(--accent);transition:transform .3s}
+.story-card.open .story-toggle{transform:rotate(45deg)}
+.story-body{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .4s ease;padding:0 20px}
+.story-card.open .story-body{max-height:2000px;padding:20px}
+.story-inner{display:grid;grid-template-columns:160px 1fr;gap:20px}
+@media (max-width:600px){.story-inner{grid-template-columns:1fr}}
+.story-photo{width:100%;aspect-ratio:3/4;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--soft)}
+.story-photo svg{width:100%;height:100%}
+.story-section{margin-bottom:12px}
+.story-section h4{font-size:1rem;color:var(--accent);margin-bottom:4px}
+.story-section p{margin:0;font-size:.95rem}
+.quote{margin:12px 0;padding:12px 16px;border-left:3px solid var(--accent);background:var(--soft);font-style:italic}
+.quote cite{display:block;margin-top:6px;font-style:normal;font-size:.85rem;color:#5a5a5a}
+.sources{font-size:.85rem;color:#5a5a5a;margin-top:8px}
+.sources li{margin-bottom:2px}
+.status{display:inline-block;margin-top:8px;padding:2px 8px;border:1px solid var(--gold);color:var(--accent);font-size:.8rem;border-radius:4px;background:#fff}
+
+/* Map */
+#map{height:500px;width:100%;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--soft)}
+.map-fallback{display:none;padding:40px;text-align:center;border:1px solid var(--line);border-radius:8px;background:var(--soft);color:#5a5a5a}
+.map-fallback.show{display:block}
+#map.hide{display:none}
+.map-note{margin-top:10px;font-size:.85rem;color:#5a5a5a;font-style:italic}
+.places-list{margin-top:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.place-card{background:#fff;border:1px solid var(--line);border-radius:6px;padding:14px;font-size:.9rem}
+.place-card strong{color:var(--accent);display:block;margin-bottom:4px}
+.popup{font-family:"PT Sans","Open Sans",Arial,sans-serif;font-size:.9rem}
+.popup strong{color:var(--accent)}
+.popup a{color:var(--accent);font-weight:600}
+.custom-marker{background:transparent}
+.custom-marker div{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent)}
+
+/* Sources */
+details{background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:12px;overflow:hidden}
+details summary{cursor:pointer;padding:14px 18px;font-family:Georgia,"PT Serif",serif;font-size:1.05rem;color:var(--accent);list-style:none;display:flex;align-items:center;gap:10px}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"+";font-size:1.2rem;color:var(--gold)}
+details[open] summary::before{content:"−"}
+details .details-body{padding:0 18px 18px;font-size:.95rem}
+details .details-body ul{margin:8px 0 0;padding-left:20px}
+details .details-body li{margin-bottom:6px}
+
+/* Feedback */
+.feedback-wrap{max-width:600px;margin:0 auto}
+.form-row{margin-bottom:16px}
+.form-row label{display:block;margin-bottom:6px;font-size:.95rem}
+.form-row input,.form-row textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:1rem;background:#fff}
+.form-row textarea{min-height:120px;resize:vertical}
+.checkbox-row{display:flex;align-items:flex-start;gap:8px;font-size:.9rem}
+.checkbox-row input{margin-top:4px}
+.form-note{font-size:.85rem;color:#5a5a5a;font-style:italic;margin-bottom:16px}
+.form-msg{margin-top:12px;padding:10px;border-radius:6px;display:none}
+.form-msg.show{display:block;background:var(--soft);border:1px solid var(--line)}
+
+/* Footer */
+.site-footer{background:#2c2c2c;color:#d4c9b8;padding:32px 0;margin-top:40px;text-align:center;font-size:.9rem}
+.site-footer .inst{color:#f5f0e8;font-family:Georgia,"PT Serif",serif;margin-bottom:8px}
+.to-top{position:fixed;bottom:20px;right:20px;background:var(--accent);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:999}
+.to-top.show{display:flex}
+
+/* Reveal animation */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .4s ease,transform .4s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Leaflet popup override */
+.leaflet-popup-content-wrapper{border-radius:6px;font-family:"PT Sans","Open Sans",Arial,sans-serif}
+.leaflet-popup-content{margin:12px 14px}
+.leaflet-control-attribution{font-size:.7rem}
+</style>
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к содержанию</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">Женщины Вороновщины</div>
+    <nav aria-label="Основная навигация">
+      <ul class="nav-list" id="navList">
+        <li><a href="#about">О проекте</a></li>
+        <li><a href="#timeline">Хронология</a></li>
+        <li><a href="#stories">Судьбы</a></li>
+        <li><a href="#map-section">Карта памяти</a></li>
+        <li><a href="#sources">Источники</a></li>
+        <li><a href="#feedback">Обратная связь</a></li>
+      </ul>
+    </nav>
+    <button class="hamburger" id="hamburger" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#about">О проекте</a>
+  <a href="#timeline">Хронология</a>
+  <a href="#stories">Судьбы</a>
+  <a href="#map-section">Карта памяти</a>
+  <a href="#sources">Источники</a>
+  <a href="#feedback">Обратная связь</a>
+</div>
+
+<main id="main">
+
+<section class="hero" id="hero">
+  <div class="hero-content">
+    <h1>Память, которую нельзя стереть</h1>
+    <p class="sub">Женщины Вороновщины — узницы фашистских концлагерей</p>
+    <p class="slogan">«Они прошли через ад — мы храним их имена»</p>
+    <a class="btn" href="#stories">Читать истории</a>
+  </div>
+</section>
+
+<section class="section numbers" id="numbers">
+  <div class="container">
+    <h2 class="section-title">Ключевые цифры</h2>
+    <p class="section-sub">Цена войны для Вороновского района</p>
+    <div class="num-grid">
+      <div class="num-card reveal">
+        <div class="num">3</div>
+        <div class="num-label">лагеря смерти на территории района</div>
+        <div class="num-note">Вороново, Радунь, Конвелишки — по данным районного музея и «Книги памяти Вороновского района»</div>
+      </div>
+      <div class="num-card reveal">
+        <div class="num">1194</div>
+        <div class="num-label">жителей угнано и убито</div>
+        <div class="num-note">По данным «Книги памяти Вороновского района»</div>
+      </div>
+      <div class="num-card reveal">
+        <div class="num">5096</div>
+        <div class="num-label">человек в братских могилах</div>
+        <div class="num-note">16 братских могил — по данным районного музея</div>
+      </div>
+      <div class="num-card reveal">
+        <div class="num">1604</div>
+        <div class="num-label">расстреляно, из них 492 женщины и 299 детей</div>
+        <div class="num-note">По данным «Книги памяти Вороновского района»</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="container">
+    <h2 class="section-title">О проекте</h2>
+    <p class="section-sub">Цифровой мемориал о женщинах Вороновщины</p>
+    <div class="about-grid">
+      <div class="about-block reveal">
+        <h3>Цель</h3>
+        <p>Сохранить память о женщинах Вороновского района, прошедших через фашистские концлагеря и угон на принудительные работы в 1941–1944 гг., и передать их имена следующим поколениям.</p>
+      </div>
+      <div class="about-block reveal">
+        <h3>Методика</h3>
+        <p>Работа с архивами, районным музеем, краеведческими публикациями и семейными воспоминаниями. Каждый факт сопровождается ссылкой на источник.</p>
+      </div>
+      <div class="about-block reveal">
+        <h3>Принцип</h3>
+        <p>Воспоминания оформляются как прямые цитаты с пометкой «по воспоминаниям семьи». Неподтверждённые факты помечаются «требует уточнения» или не публикуются. Цитаты не редактируются, сокращения помечаются […].</p>
+      </div>
+      <div class="about-block reveal">
+        <h3>Благодарности</h3>
+        <p>Национальному архиву Республики Беларусь, Вороновскому районному музею, редакции районной газеты «Вороновская газета», семьям героинь, сохранившим память.</p>
+      </div>
+    </div>
+    <div class="institution reveal">
+      Проект подготовлен Государственным учреждением образования «Вороновская средняя школа имени Т.Я. Литовчика».
+    </div>
+  </div>
+</section>
+
+<section class="section" id="timeline">
+  <div class="container">
+    <h2 class="section-title">Хронология</h2>
+    <p class="section-sub">События 1941–1944 гг. на Вороновщине</p>
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <div class="tl-date">28 июня 1941 г.</div>
+        <p class="tl-text">Начало оккупации Вороновского района.</p>
+        <div class="tl-note">Источник: «Книга памяти Вороновского района».</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">14 ноября 1941 г.</div>
+        <p class="tl-text">Расстрел 263 евреев на окраине Вороново.</p>
+        <div class="tl-note">Источник: Национальный архив Республики Беларусь.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">11 мая 1942 г.</div>
+        <p class="tl-text">Расстрел в Вороновском гетто — 1291 человек.</p>
+        <div class="tl-note">Источник: «Книга памяти Вороновского района»; Национальный архив Республики Беларусь.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Осень 1943 г.</div>
+        <p class="tl-text">Семья Борисенко попала в Минское гетто.</p>
+        <div class="tl-note">Источник: воспоминания Зои Валентиновны Борисенко (по воспоминаниям семьи).</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">4 мая 1944 г.</div>
+        <p class="tl-text">Вывоз семьи Демьянченковых в Германию.</p>
+        <div class="tl-note">Источник: воспоминания Нины Даниловны Демьянченковой (по воспоминаниям семьи).</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">11 июля 1944 г.</div>
+        <p class="tl-text">Освобождение района.</p>
+        <div class="tl-note">Источник: «Книга памяти Вороновского района».</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="stories">
+  <div class="container">
+    <h2 class="section-title">Женские судьбы</h2>
+    <p class="section-sub">Шесть историй, которые нельзя забыть</p>
+    <div class="stories">
+
+      <!-- 1 -->
+      <article class="story-card reveal" id="story-borisenko">
+        <button class="story-head" aria-expanded="false" aria-controls="body-borisenko">
+          <div class="story-thumb">
+            <svg viewBox="0 0 60 80" role="img" aria-label="Фотография Зои Валентиновны Борисенко (заглушка)"><rect width="60" height="80" fill="#faf7f0"/><circle cx="30" cy="26" r="11" fill="#800000" opacity=".7"/><path d="M12 72 Q30 48 48 72 Z" fill="#800000" opacity=".7"/></svg>
+          </div>
+          <div class="story-title">
+            <h3 class="story-name">Зоя Валентиновна Борисенко</h3>
+            <p class="story-years">Род. 1937 г. · центральная история проекта</p>
+          </div>
+          <span class="story-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="story-body" id="body-borisenko" role="region">
+          <div class="story-inner">
+            <div class="story-photo">
+              <svg viewBox="0 0 120 160" role="img" aria-label="Фотография Зои Валентиновны Борисенко (заглушка)"><rect width="120" height="160" fill="#faf7f0"/><circle cx="60" cy="52" r="22" fill="#800000" opacity=".7"/><path d="M24 144 Q60 96 96 144 Z" fill="#800000" opacity=".7"/></svg>
+            </div>
+            <div>
+              <div class="story-section">
+                <h4>Биография</h4>
+                <p>Родилась в 1937 г. в Витебской области (точная дата рождения требует уточнения). В 1943 г. вместе с матерью Марией Никифоровной и сёстрами и братьями — Лидой (11 лет), Виктором (9 лет), Юрием (4 года), Ниной (2 года) — вывезена из леса в Минское гетто. Все заболели тифом. Семью погрузили в вагоны-телятники. Поезд был брошен немцами у Вороново. Выживших приютила польская семья. Весной 1944 г. умерших захоронили в общей могиле у Вороново. Зоя Валентиновна — единственная выжившая из семьи, ищет сведения о захоронении родных.</p>
+              </div>
+              <div class="story-section">
+                <h4>Связь с Вороновщиной</h4>
+                <p>Семья погибла и была захоронена в общей могиле у Вороново; Зоя Валентиновна ищет сведения о месте захоронения родных.</p>
+              </div>
+              <blockquote class="quote">
+                «В настоящее время в живых, вернувшихся из Вороново, осталась я одна… Мне очень хотелось бы узнать ещё хоть что-то…»
+                <cite>— по воспоминаниям семьи</cite>
+              </blockquote>
+              <span class="status">Центральная история проекта</span>
+              <ul class="sources">
+                <li>Источник: воспоминания Зои Валентиновны Борисенко (по воспоминаниям семьи).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 2 -->
+      <article class="story-card reveal" id="story-strachinskaya">
+        <button class="story-head" aria-expanded="false" aria-controls="body-strachinskaya">
+          <div class="story-thumb">
+            <svg viewBox="0 0 60 80" role="img" aria-label="Фотография Зофьи Брониславовны Страчинской (заглушка)"><rect width="60" height="80" fill="#faf7f0"/><circle cx="30" cy="26" r="11" fill="#800000" opacity=".7"/><path d="M12 72 Q30 48 48 72 Z" fill="#800000" opacity=".7"/></svg>
+          </div>
+          <div class="story-title">
+            <h3 class="story-name">Зофья Брониславовна Страчинская</h3>
+            <p class="story-years">Род. 1945 г. · ровесница Победы</p>
+          </div>
+          <span class="story-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="story-body" id="body-strachinskaya" role="region">
+          <div class="story-inner">
+            <div class="story-photo">
+              <svg viewBox="0 0 120 160" role="img" aria-label="Фотография Зофьи Брониславовны Страчинской (заглушка)"><rect width="120" height="160" fill="#faf7f0"/><circle cx="60" cy="52" r="22" fill="#800000" opacity=".7"/><path d="M24 144 Q60 96 96 144 Z" fill="#800000" opacity=".7"/></svg>
+            </div>
+            <div>
+              <div class="story-section">
+                <h4>Биография</h4>
+                <p>Родилась в 1945 г., ровесница Победы. Родители молодыми были угнаны на работы в Германию, там нашли друг друга. Всю жизнь работала в хозяйстве «Больтишки». Воспитала 4 сыновей, 7 внуков, 6 правнуков.</p>
+              </div>
+              <div class="story-section">
+                <h4>Связь с Вороновщиной</h4>
+                <p>Хозяйство «Больтишки» Вороновского района — место её трудовой жизни.</p>
+              </div>
+              <blockquote class="quote">
+                «Чаму ж не жыць цяпер? Гэтак добра, а галоўнае — спакойна ў краіне. Адным цешуся — мае чацвёра сыноў, сямёра ўнукаў і шасцёра праўнукаў жывуць у згодзе і міры…»
+                <cite>— по воспоминаниям семьи</cite>
+              </blockquote>
+              <p class="num-note">Перевод с белорусского: «Почему же не жить сейчас? Так хорошо, а главное — спокойно в стране. Одним радуюсь — мои четверо сыновей, семеро внуков и шестеро правнуков живут в согласии и мире…»</p>
+              <ul class="sources">
+                <li>Источник: воспоминания Зофьи Брониславовны Страчинской (по воспоминаниям семьи).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 3 -->
+      <article class="story-card reveal" id="story-krasotskaya">
+        <button class="story-head" aria-expanded="false" aria-controls="body-krasotskaya">
+          <div class="story-thumb">
+            <svg viewBox="0 0 60 80" role="img" aria-label="Фотография Нины Михайловны Красоцкой (заглушка)"><rect width="60" height="80" fill="#faf7f0"/><circle cx="30" cy="26" r="11" fill="#800000" opacity=".7"/><path d="M12 72 Q30 48 48 72 Z" fill="#800000" opacity=".7"/></svg>
+          </div>
+          <div class="story-title">
+            <h3 class="story-name">Нина Михайловна Красоцкая (девичья — Дерябина)</h3>
+            <p class="story-years">Узница · семья Дерябиных</p>
+          </div>
+          <span class="story-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="story-body" id="body-krasotskaya" role="region">
+          <div class="story-inner">
+            <div class="story-photo">
+              <svg viewBox="0 0 120 160" role="img" aria-label="Фотография Нины Михайловны Красоцкой (заглушка)"><rect width="120" height="160" fill="#faf7f0"/><circle cx="60" cy="52" r="22" fill="#800000" opacity=".7"/><path d="M24 144 Q60 96 96 144 Z" fill="#800000" opacity=".7"/></svg>
+            </div>
+            <div>
+              <div class="story-section">
+                <h4>Биография</h4>
+                <p>Вместе с семьёй прошла путь из Витебска до Германии. Семья выжила, через два года вернулась в разбомблённый Витебск. Внучка Виктория, учитель истории в Санкт-Петербурге, создала экспозицию о семье Дерябиных.</p>
+              </div>
+              <div class="story-section">
+                <h4>Связь с Вороновщиной</h4>
+                <p>Судьба семьи Дерябиных — часть общей истории угона жителей региона на принудительные работы.</p>
+              </div>
+              <blockquote class="quote">
+                «Трое детей, четверо внуков и столько же правнуков — вот моё самое главное богатство… Очень хочу, чтобы то, через что пришлось нам пройти, больше никогда не повторилось на нашей земле».
+                <cite>— по воспоминаниям семьи</cite>
+              </blockquote>
+              <ul class="sources">
+                <li>Источник: воспоминания Нины Михайловны Красоцкой (по воспоминаниям семьи).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 4 -->
+      <article class="story-card reveal" id="story-demyanchenkova">
+        <button class="story-head" aria-expanded="false" aria-controls="body-demyanchenkova">
+          <div class="story-thumb">
+            <svg viewBox="0 0 60 80" role="img" aria-label="Фотография Нины Даниловны Демьянченковой (заглушка)"><rect width="60" height="80" fill="#faf7f0"/><circle cx="30" cy="26" r="11" fill="#800000" opacity=".7"/><path d="M12 72 Q30 48 48 72 Z" fill="#800000" opacity=".7"/></svg>
+          </div>
+          <div class="story-title">
+            <h3 class="story-name">Нина Даниловна Демьянченкова</h3>
+            <p class="story-years">Род. 1939 г. · д. Большое Бабино</p>
+          </div>
+          <span class="story-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="story-body" id="body-demyanchenkova" role="region">
+          <div class="story-inner">
+            <div class="story-photo">
+              <svg viewBox="0 0 120 160" role="img" aria-label="Фотография Нины Даниловны Демьянченковой (заглушка)"><rect width="120" height="160" fill="#faf7f0"/><circle cx="60" cy="52" r="22" fill="#800000" opacity=".7"/><path d="M24 144 Q60 96 96 144 Z" fill="#800000" opacity=".7"/></svg>
+            </div>
+            <div>
+              <div class="story-section">
+                <h4>Биография</h4>
+                <p>Родилась в 1939 г. в д. Большое Бабино Оршанского района Витебской области. В семье было шестеро детей. 4 мая 1944 г. семью как партизанскую вывезли в Германию. Концлагерь в г. Вупперталь, затем работа на овощной фабрике в г. Ляйшлинген. Семья стояла перед газовой камерой, но дверь закрылась.</p>
+              </div>
+              <div class="story-section">
+                <h4>Связь с Вороновщиной</h4>
+                <p>Судьба семьи Демьянченковых — часть общей истории угона и концлагерей, связанной с регионом.</p>
+              </div>
+              <blockquote class="quote">
+                «Настоящие герои — это мой отец, мои братья, моя мама. Отец с первого дня войны был на фронте, вернулся только в сентябре 1945 года. Был в плену, дважды бежал…»
+                <cite>— по воспоминаниям семьи</cite>
+              </blockquote>
+              <ul class="sources">
+                <li>Источник: воспоминания Нины Даниловны Демьянченковой (по воспоминаниям семьи).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 5 -->
+      <article class="story-card reveal" id="story-zhikh">
+        <button class="story-head" aria-expanded="false" aria-controls="body-zhikh">
+          <div class="story-thumb">
+            <svg viewBox="0 0 60 80" role="img" aria-label="Фотография Марии Мартиновны Жих (заглушка)"><rect width="60" height="80" fill="#faf7f0"/><circle cx="30" cy="26" r="11" fill="#800000" opacity=".7"/><path d="M12 72 Q30 48 48 72 Z" fill="#800000" opacity=".7"/></svg>
+          </div>
+          <div class="story-title">
+            <h3 class="story-name">Мария Мартиновна Жих</h3>
+            <p class="story-years">Род. 1924 г. · агрогородок Бенякони</p>
+          </div>
+          <span class="story-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="story-body" id="body-zhikh" role="region">
+          <div class="story-inner">
+            <div class="story-photo">
+              <svg viewBox="0 0 120 160" role="img" aria-label="Фотография Марии Мартиновны Жих (заглушка)"><rect width="120" height="160" fill="#faf7f0"/><circle cx="60" cy="52" r="22" fill="#800000" opacity=".7"/><path d="M24 144 Q60 96 96 144 Z" fill="#800000" opacity=".7"/></svg>
+            </div>
+            <div>
+              <div class="story-section">
+                <h4>Биография</h4>
+                <p>Родилась в 1924 г., жительница агрогородка Бенякони. Подростком прошла концлагерь Кивиыли (Эстония). В 2024 г. ей исполнилось 96 лет.</p>
+              </div>
+              <div class="story-section">
+                <h4>Связь с Вороновщиной</h4>
+                <p>Агрогородок Бенякони Вороновского района — место её жительства.</p>
+              </div>
+              <blockquote class="quote">
+                «Беражы вас усіх Бог… Усё маё жыццё пранізана нейкімі бедамі, але, дзякаваць Богу, яшчэ жыву».
+                <cite>— по воспоминаниям семьи</cite>
+              </blockquote>
+              <p class="num-note">Перевод с белорусского: «Берегите вас всех Бог… Вся моя жизнь пронизана какими-то бедами, но, слава Богу, ещё живу».</p>
+              <ul class="sources">
+                <li>Источник: воспоминания Марии Мартиновны Жих (по воспоминаниям семьи).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 6 -->
+      <article class="story-card reveal" id="story-artemieva">
+        <button class="story-head" aria-expanded="false" aria-controls="body-artemieva">
+          <div class="story-thumb">
+            <svg viewBox="0 0 60 80" role="img" aria-label="Фотография Зинаиды Николаевны Артемьевой (заглушка)"><rect width="60" height="80" fill="#faf7f0"/><circle cx="30" cy="26" r="11" fill="#800000" opacity=".7"/><path d="M12 72 Q30 48 48 72 Z" fill="#800000" opacity=".7"/></svg>
+          </div>
+          <div class="story-title">
+            <h3 class="story-name">Зинаида Николаевна Артемьева</h3>
+            <p class="story-years">Бывшая малолетняя узница</p>
+          </div>
+          <span class="story-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="story-body" id="body-artemieva" role="region">
+          <div class="story-inner">
+            <div class="story-photo">
+              <svg viewBox="0 0 120 160" role="img" aria-label="Фотография Зинаиды Николаевны Артемьевой (заглушка)"><rect width="120" height="160" fill="#faf7f0"/><circle cx="60" cy="52" r="22" fill="#800000" opacity=".7"/><path d="M24 144 Q60 96 96 144 Z" fill="#800000" opacity=".7"/></svg>
+            </div>
+            <div>
+              <div class="story-section">
+                <h4>Биография</h4>
+                <p>Бывшая малолетняя узница фашистских концлагерей. В 2025 г. в 85 лет лично пришла на избирательный участок.</p>
+              </div>
+              <div class="story-section">
+                <h4>Связь с Вороновщиной</h4>
+                <p>Жительница региона, бывшая малолетняя узница.</p>
+              </div>
+              <blockquote class="quote">
+                «Свой голос отдала за то, чтобы больше никогда на нашей земле не повторялись ужасы войны… Живём сейчас замечательно, нужды не испытываем ни в чём. Опять же, пенсию получаем исправно. Главное, чтобы жизнь была мирной».
+                <cite>— по воспоминаниям семьи</cite>
+              </blockquote>
+              <ul class="sources">
+                <li>Источник: воспоминания Зинаиды Николаевны Артемьевой (по воспоминаниям семьи).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section class="section" id="map-section">
+  <div class="container">
+    <h2 class="section-title">Карта памяти</h2>
+    <p class="section-sub">Места памяти Вороновского района</p>
+    <div id="map"></div>
+    <div id="map-fallback" class="map-fallback">Карта временно недоступна. Места памяти: Вороново, Радунь, Конвелишки, Больтишки, Бенякони.</div>
+    <p class="map-note">Карта: © OpenStreetMap contributors</p>
+    <div class="places-list">
+      <div class="place-card"><strong>Вороново</strong>Лагерь смерти, гетто. 11 мая 1942 г. расстреляно 1291 человек.</div>
+      <div class="place-card"><strong>Радунь</strong>Лагерь смерти.</div>
+      <div class="place-card"><strong>Конвелишки</strong>Лагерь смерти.</div>
+      <div class="place-card"><strong>Больтишки</strong>Хозяйство, где всю жизнь работала Зофья Страчинская.</div>
+      <div class="place-card"><strong>Бенякони</strong>Место жительства Марии Жих, узницы концлагеря Кивиыли.</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sources">
+  <div class="container">
+    <h2 class="section-title">Источники</h2>
+    <p class="section-sub">Библиография и архивные материалы</p>
+    <details>
+      <summary>Архивы</summary>
+      <div class="details-body">
+        <ul>
+          <li>Национальный архив Республики Беларусь. Фонды по истории оккупации Вороновского района в 1941–1944 гг.</li>
+          <li>Вороновский районный музей. Коллекция материалов о жертвах войны и узниках концлагерей.</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Книги и исследования</summary>
+      <div class="details-body">
+        <ul>
+          <li>«Книга памяти Вороновского района». Вороново, районный музей.</li>
+          <li>Краеведческие публикации о Вороновщине в годы Великой Отечественной войны.</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Периодика</summary>
+      <div class="details-body">
+        <ul>
+          <li>Районная газета «Вороновская газета» — публикации о ветеранах и бывших узниках.</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Семейные архивы</summary>
+      <div class="details-body">
+        <ul>
+          <li>Воспоминания Зои Валентиновны Борисенко (по воспоминаниям семьи).</li>
+          <li>Воспоминания Зофьи Брониславовны Страчинской (по воспоминаниям семьи).</li>
+          <li>Воспоминания Нины Михайловны Красоцкой (по воспоминаниям семьи).</li>
+          <li>Воспоминания Нины Даниловны Демьянченковой (по воспоминаниям семьи).</li>
+          <li>Воспоминания Марии Мартиновны Жих (по воспоминаниям семьи).</li>
+          <li>Воспоминания Зинаиды Николаевны Артемьевой (по воспоминаниям семьи).</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section class="section" id="feedback">
+  <div class="container">
+    <h2 class="section-title">Обратная связь</h2>
+    <p class="section-sub">Поделитесь фотографиями, документами или воспоминаниями</p>
+    <div class="feedback-wrap">
+      <p class="form-note">Если в вашей семье есть фотографии, документы или воспоминания — напишите нам.</p>
+      <form id="feedbackForm">
+        <div class="form-row">
+          <label for="name">Имя</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-row">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-row">
+          <label for="message">Сообщение</label>
+          <textarea id="message" name="message" required></textarea>
+        </div>
+        <div class="form-row checkbox-row">
+          <input type="checkbox" id="consent" name="consent" required>
+          <label for="consent">Согласен(а) на обработку персональных данных</label>
+        </div>
+        <button class="btn" type="submit">Отправить</button>
+        <div class="form-msg" id="formMsg">Спасибо! Ваше сообщение принято.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="inst">© Государственное учреждение образования «Вороновская средняя школа имени Т.Я. Литовчика», 2026</div>
+    <div>Цифровой мемориал «Женщины Вороновщины: память, которую нельзя стереть»</div>
+    <div style="margin-top:10px"><a href="#hero" style="color:var(--gold)">Наверх</a></div>
+  </div>
+</footer>
+
+<button class="to-top" id="toTop" aria-label="Наверх">↑</button>
+
+<script>
+(function(){
+  // Mobile menu
+  var hamburger = document.getElementById('hamburger');
+  var mobileMenu = document.getElementById('mobileMenu');
+  if(hamburger && mobileMenu){
+    hamburger.addEventListener('click', function(){
+      var open = mobileMenu.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    mobileMenu.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ mobileMenu.classList.remove('open'); hamburger.setAttribute('aria-expanded','false'); });
+    });
+  }
+
+  // Smooth scroll with offset
+  function scrollToAnchor(hash){
+    if(!hash || hash === '#') return;
+    var el = document.querySelector(hash);
+    if(!el) return;
+    var headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 64;
+    var top = el.getBoundingClientRect().top + window.pageYOffset - headerH - 10;
+    window.scrollTo({top: top, behavior: 'smooth'});
+  }
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var href = a.getAttribute('href');
+      if(href && href.startsWith('#') && href.length > 1){
+        e.preventDefault();
+        scrollToAnchor(href);
+      }
+    });
+  });
+
+  // Accordion
+  document.querySelectorAll('.story-card').forEach(function(card){
+    var btn = card.querySelector('.story-head');
+    var body = card.querySelector('.story-body');
+    if(!btn || !body) return;
+    btn.addEventListener('click', function(){
+      var isOpen = card.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      if(isOpen){
+        body.style.maxHeight = body.scrollHeight + 'px';
+      } else {
+        body.style.maxHeight = '0px';
+      }
+    });
+  });
+
+  // To top button
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 400){ toTop.classList.add('show'); } else { toTop.classList.remove('show'); }
+  });
+  if(toTop){ toTop.addEventListener('click', function(){ window.scrollTo({top:0,behavior:'smooth'}); }); }
+
+  // Reveal animation
+  var revealEls = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var revealObs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+      });
+    }, {threshold:0.12});
+    revealEls.forEach(function(el){ revealObs.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('visible'); });
+  }
+
+  // Active nav highlight
+  var sections = document.querySelectorAll('main section[id], section[id]');
+  var navLinks = document.querySelectorAll('.nav-list a, .mobile-menu a');
+  function setActive(id){
+    navLinks.forEach(function(l){
+      var href = l.getAttribute('href');
+      if(href === '#'+id){ l.classList.add('active'); } else { l.classList.remove('active'); }
+    });
+  }
+  if('IntersectionObserver' in window){
+    var navObs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ setActive(e.target.id); }
+      });
+    }, {rootMargin:'-40% 0px -55% 0px', threshold:0});
+    sections.forEach(function(s){ if(s.id) navObs.observe(s); });
+  }
+
+  // Feedback form
+  var form = document.getElementById('feedbackForm');
+  var msg = document.getElementById('formMsg');
+  if(form){
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      if(msg){ msg.classList.add('show'); }
+      form.reset();
+    });
+  }
+
+  // Map init
+  var map = null;
+  function showFallback(){
+    var m = document.getElementById('map');
+    var f = document.getElementById('map-fallback');
+    if(m) m.classList.add('hide');
+    if(f) f.classList.add('show');
+  }
+  function initMap(){
+    if(typeof L === 'undefined'){ showFallback(); return; }
+    var container = document.getElementById('map');
+    if(!container){ return; }
+    try {
+      map = L.map('map').setView([54.13,25.15], 10);
+      var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      });
+      var errCount = 0;
+      tileLayer.on('tileerror', function(){
+        errCount++;
+        if(errCount > 8){ showFallback(); }
+      });
+      tileLayer.addTo(map);
+
+      var icon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div></div>',
+        iconSize: [14,14],
+        iconAnchor: [7,7]
+      });
+
+      var places = [
+        { name:'Вороново', coords:[54.1500,25.3170], note:'Лагерь смерти, гетто. 11 мая 1942 г. расстреляно 1291 человек.', link:'#story-borisenko' },
+        { name:'Радунь', coords:[54.0493,24.9985], note:'Лагерь смерти.' },
+        { name:'Конвелишки', coords:[54.2297,25.4666], note:'Лагерь смерти.' },
+        { name:'Больтишки', coords:[53.9397,25.0411], note:'Хозяйство, где всю жизнь работала Зофья Страчинская.', link:'#story-strachinskaya' },
+        { name:'Бенякони', coords:[54.2503,25.3589], note:'Место жительства Марии Жих, узницы концлагеря Кивиыли.', link:'#story-zhikh' }
+      ];
+
+      places.forEach(function(p){
+        var mkr = L.marker(p.coords, {icon: icon}).addTo(map);
+        var linkHtml = p.link ? '<br><a href="'+p.link+'" class="popup-link">Подробнее →</a>' : '';
+        var html = '<div class="popup"><strong>'+p.name+'</strong><br>'+p.note+linkHtml+'</div>';
+        mkr.bindPopup(html);
+      });
+    } catch(e){
+      showFallback();
+    }
+  }
+
+  // Popup link smooth scroll
+  var mapContainer = document.getElementById('map');
+  if(mapContainer){
+    mapContainer.addEventListener('click', function(e){
+      var link = e.target.closest ? e.target.closest('.popup-link') : null;
+      if(link){
+        e.preventDefault();
+        var href = link.getAttribute('href');
+        if(map){ map.closePopup(); }
+        scrollToAnchor(href);
+      }
+    });
+  }
+
+  // Init map after load
+  if(document.readyState === 'complete'){ initMap(); }
+  else { window.addEventListener('load', initMap); }
+
+  // Esc to close mobile menu
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      if(mobileMenu && mobileMenu.classList.contains('open')){
+        mobileMenu.classList.remove('open');
+        if(hamburger) hamburger.setAttribute('aria-expanded','false');
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
